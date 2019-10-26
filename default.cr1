@@ -22,22 +22,32 @@
 'FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 'DEALINGS IN THE SOFTWARE.
 
+ConstTable
+  Const LOCAL_TIME_OFFSET = -6  'hrs, logger offset relative to UTC time
+EndConstTable
+
 Const WXT_COM = 7      'datalogger COM port
 Const WXT_SDI = 0      'SDI address
-Const SCAN_INT = 60    'seconds
-Const STAT_INT = 1    'minutes
+Const GPS_COM = Com3
+Const PAR_DF = 1
+Const PAR_SENS = 6.0  'unique value per sensor, "C"  
+Const PAR_MULT = -1000/(PAR_SENS*0.604)
+Const HMP_T_DF = 3'2
+Const HMP_RH_DF = 4'3
+Const DOOR_INPUT = 8     'Control input port
+Const DOOR_POLARITY = False   'switch NO vs NC; change if reported door state is inverted
+
+Const SCAN_INT = 60    'seconds, also for data record interval
 Const DAYS_DATA = 90   'how long to store data ON THE CARD? (Ring fill)
-'HINT: internal memory keeps ~230 days, 2GB card can support >300 years  :D
+'HINT: internal memory keeps >31 days, 2GB card can support >10 years
 
-'for WindVector() - MUST BE WHOLE VALUE!
-Const SUBINT = 0 '= STAT_INT * 60 / SCAN_INT / X where X = # of subintervals (or zero)
 
-Public panel_tmpr
-Public power_in
-Units panel_tmpr = degC
-Units power_in = Vdc
+Public LoggerTmpr
+Public PowerIn
+Units LoggerTmpr = degC
+Units PowerIn = Vdc
 
-Public WXT(15)
+Public WXT(17)
 Alias WXT(1)  = WindDir_min
 Alias WXT(2)  = WindDir_avg
 Alias WXT(3)  = WindDir_max
@@ -47,14 +57,14 @@ Alias WXT(6)  = WindSpeed_max
 Alias WXT(7)  = Tmpr
 Alias WXT(8)  = RH
 Alias WXT(9)  = Press
-Alias WXT(10) = R_amt
-Alias WXT(11) = R_dur
-Alias WXT(12) = R_int
-'Alias WXT(13) = H_amt
-'Alias WXT(14) = H_dur
-'Alias WXT(15) = H_int
-Alias WXT(13) = heater_tmpr
-Alias WXT(14) = heater_volts
+Alias WXT(10) = Rain_amt
+Alias WXT(11) = Rain_dur
+Alias WXT(12) = Rain_int
+Alias WXT(13) = Hail_amt
+Alias WXT(14) = Hail_dur
+Alias WXT(15) = Hail_int
+Alias WXT(16) = HeaterTmpr
+Alias WXT(17) = HeaterVolts
 Units WindDir_min = degrees
 Units WindDir_avg = degrees
 Units WindDir_max = degrees
@@ -64,69 +74,122 @@ Units WindSpeed_max = m/s
 Units Tmpr = degC
 Units RH = percent
 Units Press = hPa
-Units R_amt = mm
-Units R_dur = sec
-Units R_int = mm/hr
-'Units H_amt = hits/cm^2
-'Units H_dur = sec
-'Units H_int = hits/cm^2/hr
-Units heater_tmpr = degC
-Units heater_volts = Vdc
+Units Rain_amt = mm
+Units Rain_dur = sec
+Units Rain_int = mm/hr
+Units Hail_amt = hits/cm^2
+Units Hail_dur = sec
+Units Hail_int = hits/cm^2/hr
+Units HeaterTmpr = degC
+Units HeaterVolts = Vdc
 
-'Dim work_out(4)
-'Alias work_out(1) = WindSpeed_sclr_Avg
-'Alias work_out(2) = WindSpeed_rslt_Avg
-'Alias work_out(3) = WindDir_rslt_Avg
-'Alias work_out(4) = WindDir_csi_Std
-'Units WindSpeed_sclr_Avg = m/s
-'Units WindSpeed_rslt_Avg = m/s
-'Units WindDir_rslt_Avg = degrees
-'Units WindDir_csi_Std = degrees
+Public PAR_approx
+Units PAR_approx = umol/(s m^2)
 
+Public hmp(2)
+Alias hmp(1) = InteriorTmpr
+Alias hmp(2) = InteriorRH
+Units InteriorTmpr = degC
+Units InteriorRH = percent
 
-'DataTable (wxt_work,True,1)
-'  DataInterval (0,STAT_INT,Min,10)
-'  WindVector(1,WindSpeed_avg,WindDir_avg,IEEE4,(WindSpeed_avg=NAN OR WindDir_avg=NAN),SUBINT,0,2)
-'EndTable
+Public DoorOpen As Boolean
+
+Dim nmea_sentence(2) As String * 90
+Public gps_data(15)
+Alias gps_data(1) = latitude_a         'Degrees latitude (+ = North; - = South)
+Alias gps_data(2) = latitude_b         'Minutes latitude
+Alias gps_data(3) = longitude_a        'Degress longitude (+ = East; - = West)
+Alias gps_data(4) = longitude_b        'Minutes longitude
+Alias gps_data(5) = speed              'Speed
+Alias gps_data(6) = course             'Course over ground
+Alias gps_data(7) = magnetic_variation 'Magnetic variation from true north (+ = East; - = West)
+Alias gps_data(8) = fix_quality        'GPS fix quality: 0 = invalid, 1 = GPS, 2 = differential GPS, 6 = estimated
+Alias gps_data(9) = nmbr_satellites    'Number of satellites used for fix
+Alias gps_data(10) = altitude          'Antenna altitude
+Alias gps_data(11) = pps               'usec into sec of system clock when PPS rising edge occurs, typically 990,000 once synced
+Alias gps_data(12) = dt_since_gprmc    'Time since last GPRMC string, normally less than 1 second
+Alias gps_data(13) = gps_ready         'Counts from 0 to 10, 10 = ready
+Alias gps_data(14) = max_clock_change  'Maximum value the clock was changed in msec
+Alias gps_data(15) = nmbr_clock_change 'Number of times the clock was changed
+Units latitude_a = degrees
+Units latitude_b = minutes
+Units longitude_a = degrees
+Units longitude_b = minutes
+Units speed = m/s
+Units course = degrees
+Units magnetic_variation = unitless
+Units fix_quality = unitless
+Units nmbr_satellites = unitless
+Units altitude = m
+Units pps = ms
+Units dt_since_gprmc = s
+Units gps_ready = unitless
+Units max_clock_change = ms
+Units nmbr_clock_change = samples
+
 
 DataTable (n2o_trailer,True,-1)
-  CardOut(0,DAYS_DATA*1440/STAT_INT)
-  DataInterval (0,STAT_INT,Min,10)
-  'Average(1,power_in,FP2,power_in=NAN)
-  'Sample (4,work_out(1),FP2)
-  'Average(6,WXT(7),IEEE4,False)
-  'HINT: DON'T POLLUTE FILES WITH HAIL BECAUSE IT BASICALLY NEVER HAPPENS
-  'Average(3,WXT(4),IEEE4,False)
-  'Average(3,WXT(1),IEEE4,False)
-  Sample(14,WXT(1),IEEE4)
+  CardOut(0,DAYS_DATA*86400/SCAN_INT)
+  DataInterval (0,SCAN_INT,Sec,10)
+  Sample(17,WXT(1),IEEE4)
+  Sample(1,PAR_approx,IEEE4)
+  Sample(1,InteriorTmpr,IEEE4)
+  Sample(1,InteriorRH,IEEE4)
+  Sample(1,LoggerTmpr,IEEE4)
+  Sample(1,PowerIn,IEEE4)
+  Sample(1,DoorOpen,IEEE4)
 EndTable
 
 
-DisplayMenu("N2O Flux Trailer",-2)
-  'DisplayValue("Batt, Vdc", power_in)
+DisplayMenu("N2O Trailer",-1)
   DisplayValue("WD, deg", WindDir_avg)
   DisplayValue("WS, m/s", WindSpeed_avg)
   DisplayValue("T, *C", Tmpr)
   DisplayValue("RH, %", RH)
   DisplayValue("P, hPa", Press)
-  DisplayValue("R_amt, mm", R_amt)
-  DisplayValue("R_dur, sec", R_dur)
-  DisplayValue("R_int, mm/hr", R_int)
+  DisplayValue("R_amt, mm", Rain_amt)
+  DisplayValue("R_dur, sec", Rain_dur)
+  DisplayValue("R_int, mm/hr", Rain_int)
+  DisplayValue("PAR mult", PAR_MULT)
+  DisplayValue("PAR (approx)", PAR_approx)
+  DisplayValue("Trailer T, *C", InteriorTmpr)
+  DisplayValue("Trailer RH, %", InteriorRH)
+  DisplayValue("Logger T, *C", LoggerTmpr)
+  DisplayValue("PowerIn, Vdc", PowerIn)
 EndMenu
 
 
 BeginProg
   Scan (SCAN_INT,Sec,0,0)
-    PanelTemp (panel_tmpr,250)
-    Battery (power_in)
+    PanelTemp(LoggerTmpr,250)
+    Battery(PowerIn)
+    If (PowerIn > 12) Then
+      SW12(True) 'allow WXT heating
+    Else
+      SW12(False) 'disable on battery
+    EndIf
     
     Move(WXT(1),15,NAN,1)
-    SDI12Recorder(WXT(1),WXT_COM,WXT_SDI,"R!",1,0)      'ask composite message
-    'CallTable (wxt_work)
-    'If (wxt_work.Output(1,1)) Then
-    '  GetRecord(work_out(1),wxt_work,1)
-    'EndIf
+    SDI12Recorder(WXT(1),WXT_COM,WXT_SDI,"R!",1,0)
     
+    VoltDiff(PAR_approx,1,mV25,PAR_DF,True,0,_60Hz,1,0)
+    If (PAR_approx <= 0) Then
+      PAR_approx = 0
+    Else
+      PAR_approx = PAR_MULT*PAR_approx
+    EndIf
+    
+    VoltSe(InteriorTmpr,1,mV2500,HMP_T_DF,False,0,_60Hz,1,0)'0.1,-40) 'degC
+    VoltSe(InteriorRH,1,mV2500,HMP_RH_DF,False,0,_60Hz,1,0)'0.1,0) 'percent
+
+    If (CheckPort(DOOR_INPUT) = DOOR_POLARITY) Then
+      DoorOpen = 1
+    Else
+      DoorOpen = 0
+    EndIf
+
+    GPS (latitude_a,GPS_COM,LOCAL_TIME_OFFSET*3600,100,nmea_sentence(1))
+
     CallTable (n2o_trailer)
   NextScan
 EndProg
