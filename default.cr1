@@ -22,8 +22,9 @@
 'FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
 'DEALINGS IN THE SOFTWARE.
 
-ConstTable
+ConstTable(Constants) 'HINT named so can modify via LoggerNet
   Const UTC_OFFSET = -8  'hrs, logger offset relative to UTC time
+  Const WXT_AZIMUTH = 0  'orientation w.r.t. True North, degrees
   Const PAR_MULT = 0 'unique sensor calibration, umol/(mV s m^2) - NEGATIVE for LI-190SA wiring convention
 EndConstTable
 
@@ -106,6 +107,9 @@ DataTable (weather,True,-1)
   Sample(1,UTC_OFFSET,FP2)
     FieldNames("UTC_OFFSET")
     Units UTC_OFFSET = hours
+  Sample(1,WXT_AZIMUTH,FP2)
+    FieldNames("WXT_AZIMUTH")
+    Units WXT_AZIMUTH = degrees
   Sample(1,PAR_MULT,IEEE4)
     FieldNames("PAR_MULT")
     Units PAR_MULT = umol/(mV s m^2)
@@ -136,6 +140,15 @@ BeginProg
     
     Move(WXT(1),15,NAN,1)
     SDI12Recorder(WXT(1),WXT_COM,WXT_SDI,"R!",1,0)
+    If (WindDir_min <> NAN) Then
+      WindDir_min = (WindDir_min + WXT_AZIMUTH) MOD 360
+    EndIf
+    If (WindDir_avg <> NAN) Then
+      WindDir_avg = (WindDir_avg + WXT_AZIMUTH) MOD 360
+    EndIf
+    If (WindDir_max <> NAN) Then
+      WindDir_max = (WindDir_max + WXT_AZIMUTH) MOD 360
+    EndIf
     
     VoltDiff(PAR_density,1,mV25,PAR_DF,True,0,_60Hz,PAR_MULT,0)
 
