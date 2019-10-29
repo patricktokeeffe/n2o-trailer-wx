@@ -24,7 +24,7 @@
 
 ConstTable
   Const UTC_OFFSET = -8  'hrs, logger offset relative to UTC time
-  Const PAR_MULT = -197.63  'unique value per sensor
+  Const PAR_MULT = 0 'unique sensor calibration, umol/(mV s m^2) - NEGATIVE for LI-190SA wiring convention
 EndConstTable
 
 Const WXT_COM = 7      'datalogger COM port
@@ -83,8 +83,9 @@ Units Hail_int = hits/cm^2/hr
 Units HeaterTmpr = degC
 Units HeaterVolts = Vdc
 
-Public PAR_approx
-Units PAR_approx = umol/(s m^2)
+Public PAR_density
+Units PAR_density = umol/(s m^2)
+
 
 Public DoorOpen = NAN 'As Boolean
 Public ClockError
@@ -97,10 +98,13 @@ DataTable (n2o_trailer,True,-1)
   Sample(8,WXT(1),FP2)
   Sample(1,WXT(9),IEEE4) 'Pressure overranges FP2 precision
   Sample(8,WXT(10),FP2)
-  Sample(1,PAR_approx,FP2) 'rounding PAR ok
+  Sample(1,PAR_density,FP2) 'rounding PAR ok
   Sample(1,LoggerTmpr,FP2)
   Sample(1,PowerIn,FP2)
   Sample(1,DoorOpen,FP2) 'HINT use FP2 to store NAN while sensor not installed
+  Sample(1,PAR_MULT,IEEE4)
+    FieldNames("PAR_MULT")
+    Units PAR_MULT = umol/(mV s m^2)
 EndTable
 
 
@@ -113,7 +117,7 @@ DisplayMenu("N2O Trailer",-1)
   DisplayValue("R_amt, mm", Rain_amt)
   DisplayValue("R_dur, sec", Rain_dur)
   DisplayValue("R_int, mm/hr", Rain_int)
-  DisplayValue("PAR (approx)", PAR_approx)
+  DisplayValue("PAR (approx)", PAR_density)
   DisplayValue("Logger T, *C", LoggerTmpr)
   DisplayValue("PowerIn, Vdc", PowerIn)
 EndMenu
@@ -132,7 +136,7 @@ BeginProg
     Move(WXT(1),15,NAN,1)
     SDI12Recorder(WXT(1),WXT_COM,WXT_SDI,"R!",1,0)
     
-    VoltDiff(PAR_approx,1,mV25,PAR_DF,True,0,_60Hz,PAR_MULT,0)
+    VoltDiff(PAR_density,1,mV25,PAR_DF,True,0,_60Hz,PAR_MULT,0)
 
 '    If (CheckPort(DOOR_INPUT) = DOOR_POLARITY) Then
 '      DoorOpen = 1

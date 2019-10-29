@@ -40,16 +40,15 @@ conventions. Refer to this table exclusively for wiring the WXT520:
 
 ### QUANTUM (PAR) sensor
 
-The (very old) PAR sensor (LI-190SA; LI-COR Biosciences) requires an inverted
-differential setup:
+The (very old) PAR sensor requires an inverted differential measurement setup:
 
 > *The multiplier is also negative, which produces a correct polarity signal.*
 
 | Description  | Color | CR1000 |
-|----------------------------------|:-----:|:-----:|
-| 2290 Millivolt adapter, negative | blue  | DF1 H |
-| 2290 Millivolt adapter, positive | green | DF1 L |
-| *jumper to CR1000 DF 1L port*    | green | &#x23DA; |
+|----------------------------------------|:-----:|:-----:|
+| Model 2290 Millivolt adapter, negative | blue  | DF1 H |
+| Model 2290 Millivolt adapter, positive | green | DF1 L |
+| *jumper to CR1000 DF 1L port*          | green | &#x23DA; |
 
 
 ### ~~Door switch~~
@@ -153,12 +152,18 @@ Use the Vaisala WXT Configuration Tool to modify settings as follows:
   Revision [4/07](http://web.archive.org/web/20191025233109/https://s.campbellsci.com/documents/us/manuals/wxt510.pdf).
   Online: <https://s.campbellsci.com/documents/us/manuals/wxt510.pdf>
 
+* LI-COR Biosciences. *LI-190SA Quantum Sensor Datasheet.*
+  Modified date [2009-11-11T13:32:49](http://web.archive.org/web/20191029220540/https://www.licor.com/env/pdf/light/190.pdf).
+  Online: <https://www.licor.com/env/pdf/light/190.pdf>
+
 * LI-COR Biosciences. *Terrestrial Quantum Sensors Instruction Manual.*
   Build date [Thursday, May 23, 2019](http://web.archive.org/web/20191026023428/https://www.licor.com/documents/oo6v1v8bbtoxbd7o299u6a503g32w3g5).
   Online: <https://www.licor.com/documents/oo6v1v8bbtoxbd7o299u6a503g32w3g5>
 
-
--> LTAR program for the door switch code..
+* LI-COR Biosciences. *Using LI-COR's Millivolt Adapters for Interfacing LI-COR
+  Radiation Sensors to Voltage-reading Dataloggers.*
+  [Modified 2011-11-04T15:37:35](http://web.archive.org/web/20191029221011/https://www.licor.com/documents/tnn0vl9t8ukt1y9x26qc).
+  Online: <https://www.licor.com/documents/tnn0vl9t8ukt1y9x26qc>
 
 * O'Keeffe, Patrick. *Compost WXT520 Logger Program.*
   [Retrieved 2019-10-25](https://github.com/patricktokeeffe/compost-wxt520/commit/0e3ad20997b60249bfd563e00267422574ed0416).
