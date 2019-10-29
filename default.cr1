@@ -92,7 +92,7 @@ Public ClockError
 Units ClockError = msec
 
 
-DataTable (n2o_trailer,True,-1)
+DataTable (weather,True,-1)
   CardOut(0,DAYS_DATA*86400/SCAN_INT)
   DataInterval (0,SCAN_INT,Sec,10)
   Sample(8,WXT(1),FP2)
@@ -145,7 +145,7 @@ BeginProg
 '      DoorOpen = 0
 '    EndIf
     
-    CallTable (n2o_trailer)
+    CallTable (weather)
   NextScan
   
   SlowSequence 'HINT keep possible timeouts from impacting daq
