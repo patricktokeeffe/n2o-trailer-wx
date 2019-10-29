@@ -36,7 +36,7 @@ Const DOOR_INPUT = 8     'Control input port
 Const DOOR_POLARITY = False   'switch NO vs NC; change if reported door state is inverted
 
 Const NTP_SERVER = "0.us.pool.ntp.org"
-Const NTP_MAX_DRIFT = 100 'msec, max drift before adjusting clock
+Const NTP_MAX_DRIFT = 500 'msec, max drift before adjusting clock
 
 Const SCAN_INT = 60    'seconds, also for data record interval
 Const DAYS_DATA = 365   'how long to store data ON THE CARD? (Ring fill)
@@ -102,6 +102,10 @@ DataTable (n2o_trailer,True,-1)
   Sample(1,LoggerTmpr,FP2)
   Sample(1,PowerIn,FP2)
   Sample(1,DoorOpen,FP2) 'HINT use FP2 to store NAN while sensor not installed
+  Sample(1,ClockError,FP2)
+  Sample(1,UTC_OFFSET,FP2)
+    FieldNames("UTC_OFFSET")
+    Units UTC_OFFSET = hours
   Sample(1,PAR_MULT,IEEE4)
     FieldNames("PAR_MULT")
     Units PAR_MULT = umol/(mV s m^2)
@@ -148,7 +152,7 @@ BeginProg
   NextScan
   
   SlowSequence 'HINT keep possible timeouts from impacting daq
-  Scan(1,Min,1,0)
+  Scan(5,Min,1,0)
     ClockError = NetworkTimeProtocol(NTP_SERVER,UTC_OFFSET*3600,NTP_MAX_DRIFT)
   NextScan
 EndProg
