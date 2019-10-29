@@ -42,10 +42,6 @@ Const SCAN_INT = 60    'seconds, also for data record interval
 Const DAYS_DATA = 365   'how long to store data ON THE CARD? (Ring fill)
 'HINT: internal memory keeps >50 days, 2GB card can support >10 years
 
-Public LoggerTmpr
-Public PowerIn
-Units LoggerTmpr = degC
-Units PowerIn = Vdc
 
 Public WXT(17)
 Alias WXT(1)  = WindDir_min
@@ -86,6 +82,10 @@ Units HeaterVolts = Vdc
 Public PAR_density
 Units PAR_density = umol/(s m^2)
 
+Public LoggerTmpr
+Public PowerIn
+Units LoggerTmpr = degC
+Units PowerIn = Vdc
 
 Public DoorOpen = NAN 'As Boolean
 Public ClockError
