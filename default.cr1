@@ -23,24 +23,24 @@
 'DEALINGS IN THE SOFTWARE.
 
 ConstTable
-  Const LOCAL_TIME_OFFSET = -6  'hrs, logger offset relative to UTC time
+  Const UTC_OFFSET = -8  'hrs, logger offset relative to UTC time
+  Const PAR_MULT = -197.63  'unique value per sensor
 EndConstTable
 
 Const WXT_COM = 7      'datalogger COM port
 Const WXT_SDI = 0      'SDI address
-Const GPS_COM = Com3
+
 Const PAR_DF = 1
-Const PAR_SENS = 6.0  'unique value per sensor, "C"  
-Const PAR_MULT = -1000/(PAR_SENS*0.604)
-Const HMP_T_DF = 3'2
-Const HMP_RH_DF = 4'3
+
 Const DOOR_INPUT = 8     'Control input port
 Const DOOR_POLARITY = False   'switch NO vs NC; change if reported door state is inverted
 
-Const SCAN_INT = 60    'seconds, also for data record interval
-Const DAYS_DATA = 90   'how long to store data ON THE CARD? (Ring fill)
-'HINT: internal memory keeps >31 days, 2GB card can support >10 years
+Const NTP_SERVER = "0.us.pool.ntp.org"
+Const NTP_MAX_DRIFT = 100 'msec, max drift before adjusting clock
 
+Const SCAN_INT = 60    'seconds, also for data record interval
+Const DAYS_DATA = 365   'how long to store data ON THE CARD? (Ring fill)
+'HINT: internal memory keeps >50 days, 2GB card can support >10 years
 
 Public LoggerTmpr
 Public PowerIn
@@ -86,58 +86,21 @@ Units HeaterVolts = Vdc
 Public PAR_approx
 Units PAR_approx = umol/(s m^2)
 
-Public hmp(2)
-Alias hmp(1) = InteriorTmpr
-Alias hmp(2) = InteriorRH
-Units InteriorTmpr = degC
-Units InteriorRH = percent
-
 Public DoorOpen As Boolean
-
-Dim nmea_sentence(2) As String * 90
-Public gps_data(15)
-Alias gps_data(1) = latitude_a         'Degrees latitude (+ = North; - = South)
-Alias gps_data(2) = latitude_b         'Minutes latitude
-Alias gps_data(3) = longitude_a        'Degress longitude (+ = East; - = West)
-Alias gps_data(4) = longitude_b        'Minutes longitude
-Alias gps_data(5) = speed              'Speed
-Alias gps_data(6) = course             'Course over ground
-Alias gps_data(7) = magnetic_variation 'Magnetic variation from true north (+ = East; - = West)
-Alias gps_data(8) = fix_quality        'GPS fix quality: 0 = invalid, 1 = GPS, 2 = differential GPS, 6 = estimated
-Alias gps_data(9) = nmbr_satellites    'Number of satellites used for fix
-Alias gps_data(10) = altitude          'Antenna altitude
-Alias gps_data(11) = pps               'usec into sec of system clock when PPS rising edge occurs, typically 990,000 once synced
-Alias gps_data(12) = dt_since_gprmc    'Time since last GPRMC string, normally less than 1 second
-Alias gps_data(13) = gps_ready         'Counts from 0 to 10, 10 = ready
-Alias gps_data(14) = max_clock_change  'Maximum value the clock was changed in msec
-Alias gps_data(15) = nmbr_clock_change 'Number of times the clock was changed
-Units latitude_a = degrees
-Units latitude_b = minutes
-Units longitude_a = degrees
-Units longitude_b = minutes
-Units speed = m/s
-Units course = degrees
-Units magnetic_variation = unitless
-Units fix_quality = unitless
-Units nmbr_satellites = unitless
-Units altitude = m
-Units pps = ms
-Units dt_since_gprmc = s
-Units gps_ready = unitless
-Units max_clock_change = ms
-Units nmbr_clock_change = samples
+Public ClockError
+Units ClockError = msec
 
 
 DataTable (n2o_trailer,True,-1)
   CardOut(0,DAYS_DATA*86400/SCAN_INT)
   DataInterval (0,SCAN_INT,Sec,10)
-  Sample(17,WXT(1),IEEE4)
-  Sample(1,PAR_approx,IEEE4)
-  Sample(1,InteriorTmpr,IEEE4)
-  Sample(1,InteriorRH,IEEE4)
-  Sample(1,LoggerTmpr,IEEE4)
-  Sample(1,PowerIn,IEEE4)
-  Sample(1,DoorOpen,IEEE4)
+  Sample(8,WXT(1),FP2)
+  Sample(1,WXT(9),IEEE4) 'Pressure overranges FP2 precision
+  Sample(8,WXT(10),FP2)
+  Sample(1,PAR_approx,FP2) 'rounding PAR ok
+  Sample(1,LoggerTmpr,FP2)
+  Sample(1,PowerIn,FP2)
+  Sample(1,DoorOpen,Boolean)
 EndTable
 
 
@@ -150,10 +113,7 @@ DisplayMenu("N2O Trailer",-1)
   DisplayValue("R_amt, mm", Rain_amt)
   DisplayValue("R_dur, sec", Rain_dur)
   DisplayValue("R_int, mm/hr", Rain_int)
-  DisplayValue("PAR mult", PAR_MULT)
   DisplayValue("PAR (approx)", PAR_approx)
-  DisplayValue("Trailer T, *C", InteriorTmpr)
-  DisplayValue("Trailer RH, %", InteriorRH)
   DisplayValue("Logger T, *C", LoggerTmpr)
   DisplayValue("PowerIn, Vdc", PowerIn)
 EndMenu
@@ -172,25 +132,20 @@ BeginProg
     Move(WXT(1),15,NAN,1)
     SDI12Recorder(WXT(1),WXT_COM,WXT_SDI,"R!",1,0)
     
-    VoltDiff(PAR_approx,1,mV25,PAR_DF,True,0,_60Hz,1,0)
-    If (PAR_approx <= 0) Then
-      PAR_approx = 0
-    Else
-      PAR_approx = PAR_MULT*PAR_approx
-    EndIf
-    
-    VoltSe(InteriorTmpr,1,mV2500,HMP_T_DF,False,0,_60Hz,1,0)'0.1,-40) 'degC
-    VoltSe(InteriorRH,1,mV2500,HMP_RH_DF,False,0,_60Hz,1,0)'0.1,0) 'percent
+    VoltDiff(PAR_approx,1,mV25,PAR_DF,True,0,_60Hz,PAR_MULT,0)
 
     If (CheckPort(DOOR_INPUT) = DOOR_POLARITY) Then
       DoorOpen = 1
     Else
       DoorOpen = 0
     EndIf
-
-    GPS (latitude_a,GPS_COM,LOCAL_TIME_OFFSET*3600,100,nmea_sentence(1))
-
+    
     CallTable (n2o_trailer)
+  NextScan
+  
+  SlowSequence 'HINT keep possible timeouts from impacting daq
+  Scan(1,Min,1,0)
+    ClockError = NetworkTimeProtocol(NTP_SERVER,UTC_OFFSET*3600,NTP_MAX_DRIFT)
   NextScan
 EndProg
 

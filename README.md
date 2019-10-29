@@ -6,12 +6,6 @@ support the N<sub>2</sub>O flux support tailer owned by [WSU LAR](lar.wsu.edu).
 
 > **TO DO cover photo**
 
-Future sensors:
-* GPS 16X
-* PAR sensor
-* thermocouple or old HMP45AC for interior temp (/RH)
-* magnetic switch (door) sensor
-
 
 ## Wiring
 
@@ -57,30 +51,13 @@ differential setup:
 | 2290 Millivolt adapter, positive | green | DF1 L |
 | *jumper to CR1000 DF 1L port*    | green | &#x23DA; |
 
-### HMP45C
-
-The (even older) temperature/humidity probe (HMP45C; Vaisala) has the legacy
-Campbell Scientific color coding scheme. Refer to the table below or Appendix
-A of the user manual:
-
-| Description        | Color  | CR1000 |
-|--------------------|:------:|:-----:|
-| Temperature signal | yellow | DF2 H |
-| Signal reference   | purple | DF2 L |
-| Humidity signal    | blue   | DF3 H |
-| *jumper to purple* | green  | DF3 L |
-| power enable/sense | orange | G     |
-| power input        | red    | 12V   |
-| power ground       | black  | G     |
-| shield             | clear  | &#x23DA; |
-
-### GPS16X-HVS
-
-The GPS unit does not require a converter for its PPS signal
-
 
 ### Door switch
 
+| Description | Color | CR1000 |
+|-------------|:-----:|:------:|
+| wire #1     | white | 5V     |
+| wire #2     | white | C8     |
 
 
 ## Operation
@@ -91,20 +68,15 @@ The GPS unit does not require a converter for its PPS signal
 2. Connect power/data cable to WXT520
 3. Turn the PS200 power switch to *ON*
 
+
 ### To monitor in real time
 
-Press any key to wake the keyboard display. Summary values are displayed on
-the default screen.
+Data can be viewed on the hand held keyboard display.
 
-![Keyboard display](keyboard-display.jpg)
 
 ### To collect data
 
-1. Unscrew and open the memory card cover
-2. Press the large white "Removal button"
-3. Press the black push tab to eject memory card
-4. Insert new blank memory card
-5. Close and secure memory card cover
+> To do: transition to FTP for data downloads...
 
 
 ## Data Products
