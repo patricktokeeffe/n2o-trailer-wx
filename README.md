@@ -34,8 +34,8 @@ conventions. Refer to this table exclusively for wiring the WXT520:
 | SDI-12 data Tx | yellow | 7            | C7     |
 | SDI-12 data Rx | black  | 1            | C7     |
 | SDI-12 ground  | white  | 3            | G      |
-| heater (+)     | blue   | 4            | SW12V  |
-| heater (-)     | orange | 6            | G      |
+| heater (+)     | blue   | 4            | *PS100 (+)/12V* |
+| heater (-)     | orange | 6            | *PS100 (-)/GND* |
 | *not used*     | red    | 5            | -      |
 
 ### QUANTUM (PAR) sensor
