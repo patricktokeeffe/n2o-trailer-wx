@@ -52,12 +52,14 @@ differential setup:
 | *jumper to CR1000 DF 1L port*    | green | &#x23DA; |
 
 
-### Door switch
+### ~~Door switch~~
+
+> **FUTURE enhancement pending hardware upgrades**
 
 | Description | Color | CR1000 |
 |-------------|:-----:|:------:|
-| wire #1     | white | 5V     |
-| wire #2     | white | C8     |
+| wire #1     | white | ~~5V~~     |
+| wire #2     | white | ~~C8~~     |
 
 
 ## Operation
