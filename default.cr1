@@ -25,7 +25,7 @@
 ConstTable(Constants) 'HINT named so can modify via LoggerNet
   Const UTC_OFFSET = -8  'hrs, logger offset relative to UTC time
   Const WXT_AZIMUTH = 0  'orientation w.r.t. True North, degrees
-  Const PAR_MULT = 0 'unique sensor calibration, umol/(mV s m^2) - NEGATIVE for LI-190SA wiring convention
+  Const PAR_MULT As Float = 0 'unique sensor calibration, umol/(mV s m^2) - NEGATIVE for LI-190SA wiring convention
 EndConstTable
 
 Const WXT_COM = 7      'datalogger COM port
