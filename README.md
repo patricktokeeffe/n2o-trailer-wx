@@ -1,30 +1,50 @@
 # N2O Flux Trailer Weather Station
 
-Simple data acquisition from Vaisala [WXT520](https://www.campbellsci.com/wxt520)
-using a Campbell Scientific [CR1000](https://www.campbellsci.com/cr1000) to
-support the N<sub>2</sub>O flux support tailer owned by [WSU LAR](lar.wsu.edu).
+Weather station (and communications package) for the [WSU LAR](lar.wsu.edu)
+N<sub>2</sub>O flux measurement support trailer.
 
-> **TO DO cover photo**
+| | |
+|-|-|
+| ![Image of mounted sensors](images/outside.jpg) | ![Image of logger enclosure](images/inside.jpg) |
+
+
+## Hardware
+
+Equipment inside a fiberglass enclosure on the trailer wall:
+
+* Battery-backed 12V power supply ([PS100](https://www.campbellsci.com/ps100), Campbell Scientific)
+* Programmable datalogger ([CR1000](https://www.campbellsci.com/cr1000), Campbell Scientific)
+* Broadband modem ([RV50](https://source.sierrawireless.com/devices/rv-series/rv50/), Sierra Wireless)
+* Rugged Ethernet switch ([SW-504](http://www.brainboxes.com/product/sw-504/industrial-ethernet-4-port-switch-din-rail-mountable), Brainboxes)
+* Ethernet surge protector ([ETH-SP](https://www.ui.com/accessories/ethernet-surge-protector/), Ubiquiti Networks)
+* Wireless access point ([Picostation M2](https://dl.ubnt.com/datasheets/picostationm/picom2hp_DS.pdf), Ubiquiti Networks)
+
+Sensors mounted on a short external mast:
+
+* Total weather station ([WXT510](https://www.campbellsci.com/wxt510), Vaisala)
+* Photosynthetically active radation sensor ([LI-190SA](https://www.licor.com/env/products/light/quantum.html), LI-COR Biosciences)
+    * *requires [Model 2290 Millivolt Adapter](https://www.licor.com/env/products/light/accessories.html) (LI-COR Biosciences)*
+
+The wireless access point can optionally be deployed outside the trailer on the
+external mast to obtain greater wireless coverage. Antennas for the broadband
+modem are permanently installed on a short mast at the nose of the trailer.
 
 
 ## Wiring
 
 ### Power System
 
-The weather station and datalogger are powered from a 12V power supply/charge
-regulator ([PS100](https://www.campbellsci.com/ps100), Campbell Scientific).
-The charge regulator normally obtains power from a 19Vdc laptop power supply
-and float charges a 7AH gel cell battery. If primary power is lost, the battery
-continues to operate the logger and sensors for up to several hours.
+All equipment listed above is powered from the battery-backed 12V power supply.
+If primary power is lost, the battery continues to operate the logger, sensors
+and communications network for up to several hours.
 
-> *The PS100 also supports telecommunications equipment (modem, WiFi, etc)
-> so network clients can still deliver email alarms in the event of power loss
-> at the site.*
+> *The communications equipment is battery-backed so network clients are still
+> able to send email alarms during a power outage.*
 
 ### WXT510
 
 The cable used does **not** match either vendor or manufacturer color
-conventions. Refer to this table exclusively for wiring the WXT520:
+conventions. Refer to this table exclusively for wiring the weather station:
 
 | Description    | Color  | M8 conn. pin | CR1000 |
 |----------------|--------|:------------:|:------:|
@@ -40,9 +60,13 @@ conventions. Refer to this table exclusively for wiring the WXT520:
 
 ### QUANTUM (PAR) sensor
 
-The (very old) PAR sensor requires an inverted differential measurement setup:
+The QUANTUM (LI-190SA) sensor connects to the BNC connector of a 2290 (604&ohm;)
+millivolt adapter, and the millivolt adapter is measured differentially:
 
-> *The multiplier is also negative, which produces a correct polarity signal.*
+
+> *The millivolt adapter for LI-190SA series PAR sensor is measured with an
+> inverted differential setup. The multiplier is also negative, which produces
+> a positive value.*
 
 | Description  | Color | CR1000 |
 |----------------------------------------|:-----:|:-----:|
@@ -51,69 +75,118 @@ The (very old) PAR sensor requires an inverted differential measurement setup:
 | *jumper to CR1000 DF 1L port*          | green | &#x23DA; |
 
 
-### ~~Door switch~~
+### Door switch
 
-> **FUTURE enhancement pending hardware upgrades**
+The magnetic reed switch door sensor is powered by the logger and connected to
+a control port. 
 
-| Description | Color | CR1000 |
-|-------------|:-----:|:------:|
-| wire #1     | white | ~~5V~~     |
-| wire #2     | white | ~~C8~~     |
+| Description | CR1000 |
+|-------------|:------:|
+| wire #1     | 5V     |
+| wire #2     | C8     |
 
 
 ## Operation
 
-### To deploy the unit
+### To deploy the sensors
 
-1. Mount WXT520 oriented to True North; see user manuals under References below
-2. Connect power/data cable to WXT520
-3. Turn the PS200 power switch to *ON*
+The weather station and PAR sensor (with leveling mount) are attached to a short
+length of aluminum slotted angle framing. This entire assembly must be removed
+during travel, then installed and oriented at each new location.
+
+To deploy the sensor mounting arm:
+
+1. Slip the mounting arm U-bolt over the instrument mast and secure loosely.
+2. Orient the mounting arm towards True North, tilting as necessary to level the
+   weather station.
+   > *If oriented to a direction other than True North, the azimuth must be
+   > updated in the logger program using a keyboard display or datalogger
+   > support software.*
+3. Secure the mounting arm U-bolt.
+4. Make final adjustments to the PAR sensor bracket to obtain a level position.
+5. Feed the PAR sensor cable through the wall port, into the logger enclosure,
+   and attach to BNC jack of milivolt adapter.
+6. Feed the weather station data cable out of the logger enclosure, through the
+   wall port, and attach to the weather station.
+7. Inside the logger enclosure, turn the power supply switch to *ON*.
+
+To remove, perform the installation procedure in reverse. 
+
+> *Do **not** remove weather station or PAR leveling bracket from the mounting arm.*
 
 
-### To monitor in real time
+### To view & retrieve data
 
-Data can be viewed on the hand held keyboard display.
+To view data, visit the datalogger's IP address with a web browser. A default
+webpage allows visitors to explore recent records (screenshot below). 
 
+To download data, use the Web API (details in *CRBasic Editor Help*). For
+example, to download the last ~7.5 days (11,000 minutes) in TOA5 format
+(CSV+headers) using a web browser, visit:
 
-### To collect data
+> [http://192.168.13.11/?command=dataquery&uri=weather&format=toa5&mode=most-recent&p1=11000](http://192.168.13.11/?command=dataquery&uri=weather&format=toa5&mode=most-recent&p1=11000)
+>
+> *The logger's IP address is `192.168.13.11` in this example. This link will
+> only work when connected to the N<sub>2</sub>O trailer's local area network
+> (wired or wireless).*
 
-> To do: transition to FTP for data downloads...
-
+![Default logger website](images/http-browse.png)
 
 ## Data Products
 
-The weather station internally produces 1-minute average values and the logger
-samples those values at the start of each minute. A single data file is written
-to CompactFlash memory card:
+The weather station internally produces 1-minute average values, and the logger
+queries for those values and samples other sensors at the start of each minute.
+A single data file is written to CompactFlash memory card:
 
-* Base name: `compost_WXT520`
-* Record interval: 5 minutes
-* Number of records: approximately 90 days on external memory card (up to 230
-  days internal storage)
-* Fill-stop settings: "ring" mode - overwrites oldest records when card is full
+* Base name: `weather`
+* Record interval: 1 minute
+* Number of records: up to 365 days
+* Fill-stop settings: "ring" mode - overwrites oldest records when memory fills
 
-| Field name         | Units   | Description |
-|--------------------|---------|-------------|
-| power_in_Avg       | Vdc     | Battery voltage |
-| WindSpeed_sclr_Avg | m/s     | Mean horizontal wind speed |
-| WindSpeed_rslt_Avg | m/s     | Mean wind vector magnitude |
-| WindDir_rslt_Avg   | degrees | Resultant mean wind direction |
-| WindDir_sclr_Avg   | degrees | Standard deviation of wind direction calculated using Campbell Scientific's wind speed weighted algorithm (not recommended for straight-line Gaussian dispersion models, but OK for variable-trajectory transport models [ref](#ref1)) |
-| Tmpr_Avg           | ºC      | Mean air temperature |
-| RH_Avg             | %       | Mean relative humidity |
-| Press_Avg          | hPa     | Mean barometric pressure |
-| R_amt_Avg          | mm      | Mean rain amount |
-| R_dur_Avg          | sec     | Mean rain duration |
-| R_int_Avg          | mm/hr   | Mean rain intensity |
-| WindSpeed_min_Avg  | m/s     | Mean minimum wind speed |
-| WindSpeed_avg_Avg  | m/s     | Mean average wind speed |
-| WindSpeed_max_Avg  | m/s     | Mean maximum wind speed |
-| WindDir_min_Avg    | degrees | ^Mean minimum wind direction |
-| WindDir_avg_Avg    | degrees | ^Mean average wind direction |
-| WindDir_max_Avg    | degrees | ^Mean maximum wind direction |
+| Field name     | Units   | Description |
+|----------------|---------|-------------|
+| WindDir_min    | degrees | Wind direction, minimum |
+| WindDir_avg    | degrees | Wind direction, average |
+| WindDir_max    | degrees | Wind direction, maximum |
+| WindSpeed_min  | m/s     | Wind speed, minimum |
+| WindSpeed_avg  | m/s     | Wind speed, average |
+| WindSpeed_max  | m/s     | Wind speed, maximum |
+| Tmpr           | degC    | Air temperature |
+| RH             | percent | Relative humidity |
+| Press          | hPa     | Barometric pressure |
+| Rain_amt       | mm      | Rain, amount |
+| Rain_dur       | sec     | Rain, duration |
+| Rain_int       | mm/hr   | Rain, intensity |
+| Hail_amt       | mm      | Hail, amount |
+| Hail_dur       | sec     | Hail, duration |
+| Hail_int       | mm/hr   | Hail, intensity |
+| HeaterTmpr     | degC    | Heating sensor temperature |
+| HeaterVolts    | Vdc     | Heater input voltage<sup>1</sup> |
+| PAR_density    | umol/(s m^2) | Photosynthetic photon flux density (PPFD), approximately<sup>2</sup> |
+| LoggerTmpr     | degC    | Logger enclosure temperature |
+| PowerIn        | Vdc     | Power supply voltage<sup>3</sup> |
+| DoorOpen       | Boolean | Status of trailer door: 0 = closed, -1 = open<sup>4</sup> |
+| ClockError     | msec    | Measured clock offset from UTC<sup>5</sup> |
+| UTC_OFFSET     | hours   | Timestamp offset from UTC<sup>6</sup> |
+| WXT_AZIMUTH    | degrees | Azimuth correction applied to WXT510 wind direction values<sup>7</sup> |
+| PAR_MULT       | umol/(mV s m^2) | Calibration multiplier used with PAR sensor<sup>8</sup> |
 
-**Notes:**
-* **^** value is dubious
+*Footnotes:*
+
+1. *Available, not applied, heating voltage (should be same value as `PowerIn`).
+   Refer to WXT510 user manual for heater operation details.*
+2. *Approximately because logger is configured for use with older
+   (uncalibrated) LI-190SA series PAR sensors.*
+3. *Unregulated voltage from battery, typically >12.8 Vdc when a charging source
+   (AC utility power) is available.*
+4. *Value will be NAN until sensor is installed.*
+5. *[Network time protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol)
+   offset relative to `0.us.pool.ntp.org`.*
+6. *Default value `-8` = Pacific Standard Time (i.e. no adjustments made for
+   Daylight Savings Time).*
+7. *Recorded wind direction min/avg/max values include this constant offset value*  
+   (i.e. `WindDir`<sub>`avg`</sub> = (`WindDir`<sub>`avg,measured`</sub>`) + WXT_AZIMUTH MOD 360`).
+8. *Value will be negative when used with LI-190SA series PAR sensors.*
 
 
 ## Configuration Summary
@@ -123,17 +196,26 @@ Use the Vaisala WXT Configuration Tool to modify settings as follows:
 * Device Settings
   * Enable heating
   * SDI-12 v1.3, continuous mode enabled
-* sensors averaging interval = 60sec
 * Message Settings
-  * messages = all but hail and rain peak
+  * All wind messages
+  * *Barometric pressure*, *Air temperature* and *Relative humidity* PTU messages
+  * All precipitation messages, except *Rain peak* and *Hail peak*
+  * *Heating temp.* and *Heating voltage* diagnostic/supervisor messages
 * Sensor Settings
-  *
+  * Wind speed unit: m/s
+  * Temperature unit: Celsius
+  * Barometric pressure unit: hPa
+  * Counter reset: Automatic
+  * Rain unit: Metric
+  * Auto report based on: Rain start/end
+  * Direction correction: 0&deg;  * Averaging time for all sensors: 1 min
+  * Update interval for all sensors: 1 min
 
 
 ## Licensing
 
 * Original software contributions are licensed under [The MIT License](https://opensource.org/licenses/MIT). 
-* Documentation, including images, are licensed under [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/).(Creative Commons Attribution-ShareAlike 4.0 International)
+* Documentation, including images, are licensed under [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/) (Creative Commons Attribution-ShareAlike 4.0 International).
 * This work derived from [*Compost WXT520 Logger Program*](https://github.com/patricktokeeffe/compost-wxt520),
   which is also subject to The MIT License.
 
