@@ -40,8 +40,8 @@ Const NTP_SERVER = "0.us.pool.ntp.org"
 Const NTP_MAX_DRIFT = 500 'msec, max drift before adjusting clock
 
 Const SCAN_INT = 60    'seconds, also for data record interval
-Const DAYS_DATA = 365   'how long to store data ON THE CARD? (Ring fill)
-'HINT: internal memory keeps >50 days, 2GB card can support >10 years
+Const DAYS_DATA = 365*5   'how long to store data ON THE CARD? (Ring fill)
+'HINT: internal memory keeps >45 days, 2GB card can support decades
 
 
 Public WXT(17)
