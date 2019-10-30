@@ -151,6 +151,9 @@ BeginProg
     EndIf
     
     VoltDiff(PAR_density,1,mV25,PAR_DF,True,0,_60Hz,PAR_MULT,0)
+    If (PAR_density < 0) Then
+      PAR_density = 0
+    EndIf
 
 '    If (CheckPort(DOOR_INPUT) = DOOR_POLARITY) Then
 '      DoorOpen = 1
