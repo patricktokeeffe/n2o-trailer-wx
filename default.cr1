@@ -132,7 +132,7 @@ EndMenu
 
 
 BeginProg
-  SW12(True) 'XXXX remove after changing heater wiring  
+  'SW12(True) 'XXXX remove after changing heater wiring  
 
   Scan (SCAN_INT,Sec,0,0)
     PanelTemp(LoggerTmpr,250)
