@@ -132,11 +132,14 @@ EndMenu
 
 
 BeginProg
-  'SW12(True) 'XXXX remove after changing heater wiring  
-
   Scan (SCAN_INT,Sec,0,0)
     PanelTemp(LoggerTmpr,250)
     Battery(PowerIn)
+    If (PowerIn > 12.6) Then
+      SW12(True) 'allow WXT heating
+    Else
+      SW12(False) 'disable on battery
+    EndIf
     
     Move(WXT(1),WXT_NVARS,NAN,1)
     SDI12Recorder(WXT(1),WXT_COM,WXT_SDI,"R!",1,0)
