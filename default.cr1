@@ -43,8 +43,8 @@ Const SCAN_INT = 60    'seconds, also for data record interval
 Const DAYS_DATA = 365*5   'how long to store data ON THE CARD? (Ring fill)
 'HINT: internal memory keeps >45 days, 2GB card can support decades
 
-
-Public WXT(17)
+Const WXT_NVARS = 17
+Public WXT(WXT_NVARS)
 Alias WXT(1)  = WindDir_min
 Alias WXT(2)  = WindDir_avg
 Alias WXT(3)  = WindDir_max
@@ -138,7 +138,7 @@ BeginProg
     PanelTemp(LoggerTmpr,250)
     Battery(PowerIn)
     
-    Move(WXT(1),15,NAN,1)
+    Move(WXT(1),WXT_NVARS,NAN,1)
     SDI12Recorder(WXT(1),WXT_COM,WXT_SDI,"R!",1,0)
     If (WindDir_min <> NAN) Then
       WindDir_min = (WindDir_min + WXT_AZIMUTH) MOD 360
