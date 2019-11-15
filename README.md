@@ -97,40 +97,75 @@ during travel, then installed and oriented at each new location.
 To deploy the sensor mounting arm:
 
 1. Slip the mounting arm U-bolt over the instrument mast and secure loosely.
-2. Orient the mounting arm towards True North, tilting as necessary to level the
-   weather station.
-   > *If oriented to a direction other than True North, the azimuth must be
-   > updated in the logger program using a keyboard display or datalogger
-   > support software.*
-3. Secure the mounting arm U-bolt.
-4. Make final adjustments to the PAR sensor bracket to obtain a level position.
-5. Feed the PAR sensor cable through the wall port, into the logger enclosure,
-   and attach to BNC jack of milivolt adapter.
-6. Feed the weather station data cable out of the logger enclosure, through the
+2. Orient the mounting arm away from the equator (e.g. northward) to prevent
+   shading the radiation sensor.
+   > *The azimuth orientation of the weather station must be measured and
+   > specified in the logger program after installation. The default azimuth
+   > value (0) assumes the WXT510 is oriented towards True North.*
+3. Tilt the mounting arm, as needed, to level the weather station.
+4. Secure the mounting arm U-bolt.
+5. Make final adjustments to the PAR sensor bracket to obtain a level position.
+6. Feed the PAR sensor cable through the wall port, into the logger enclosure,
+   and attach to BNC jack of millivolt adapter.
+7. Feed the weather station data cable out of the logger enclosure, through the
    wall port, and attach to the weather station.
-7. Inside the logger enclosure, turn the power supply switch to *ON*.
+8. Inside the logger enclosure, turn the power supply switch to *ON*.
 
 To remove, perform the installation procedure in reverse. 
 
-> *Do **not** remove weather station or PAR leveling bracket from the mounting arm.*
+> *It is not necessary or recommended to remove the weather station or PAR
+> sensor and bracket from the mounting arm. The weather station cable and
+> millivolt adapter for PAR sensor remain in the logger enclosure.*
 
+### To update constants
 
-### To view & retrieve data
+Users can modify program constants to reflect sensor or location changes:
+* `UTC_OFFSET` - time offset relative to UTC, in hours (default: `-8` = Pacific
+  Standard Time)
+* `WXT_AZIMUTH` - orientation of the weather station w.r.t. True North, in
+  degrees (default: `0` = True North)
+* `PAR_MULT` - unique sensor-specific calibration value, in
+  &micro;mol/(mV s m<sup>2</sup>) (default: `0` = *no data*)
+  *This value should be negative*
 
-To view data, visit the datalogger's IP address with a web browser. A default
+To edit these values, users have several options:
+
+* Locally, using a [keyboard display](https://www.campbellsci.com/cr1000kd)
+  (not provided) to edit the `ConstTable`
+* Over the local area network, using [LoggerLink](https://www.campbellsci.com/loggerlink)
+  to edit the public table `Constants` (recommended option)
+* Remotely (not described here), using [LoggerNet Connect](https://campbellsci.com/loggernet)
+  to edit the public table `Constants`
+
+Refer to vendor documentation for logger setup details. When connected to the
+network locally (wired or wireless) the logger can be accessed via:
+
+* IP address: `192.168.13.11`
+* Pakbus port: `6785`
+
+### To view data
+
+To view data, use any of the methods mentioned above (LoggerLink, etc) or
+visit the datalogger's IP address with a web browser. A default
 webpage allows visitors to explore recent records (screenshot below). 
 
-To download data, use the Web API (details in *CRBasic Editor Help*). For
-example, to download the last ~7.5 days (11,000 minutes) in TOA5 format
-(CSV+headers) using a web browser, visit:
+![Default logger website](images/http-browse.png)
+
+You must be connected to the trailer's local area network (wired or wireless)
+to view the logger webpage.
+
+### To download data
+
+To download data, use logger support software (LoggerLink or LoggerNet) or use
+the Web API (details in *CRBasic Editor Help*).
+
+For example, to download the last ~7.5 days (11,000 minutes) in TOA5 format
+(CSV+headers) using the Web API, visit:
 
 > [http://192.168.13.11/?command=dataquery&uri=weather&format=toa5&mode=most-recent&p1=11000](http://192.168.13.11/?command=dataquery&uri=weather&format=toa5&mode=most-recent&p1=11000)
->
-> *The logger's IP address is `192.168.13.11` in this example. This link will
-> only work when connected to the N<sub>2</sub>O trailer's local area network
-> (wired or wireless).*
 
-![Default logger website](images/http-browse.png)
+You must be connected to the trailer's local area network (wired or wireless)
+to access the logger Web API.
 
 ## Data Products
 
@@ -185,7 +220,7 @@ A single data file is written to CompactFlash memory card:
 6. *Default value `-8` = Pacific Standard Time (i.e. no adjustments made for
    Daylight Savings Time).*
 7. *Recorded wind direction min/avg/max values include this constant offset value*  
-   (i.e. `WindDir`<sub>`avg`</sub> = (`WindDir`<sub>`avg,measured`</sub>`) + WXT_AZIMUTH MOD 360`).
+   (i.e. `WindDir`<sub>`avg`</sub> = `(WindDir`<sub>`avg,measured`</sub>`) + WXT_AZIMUTH MOD 360`).
 8. *Value will be negative when used with LI-190SA series PAR sensors.*
 
 
