@@ -1,6 +1,6 @@
 # N2O Flux Trailer Weather Station
 
-Weather station (and communications package) for the [WSU LAR](lar.wsu.edu)
+Weather station (and communications package) for the [WSU LAR](http://lar.wsu.edu)
 N<sub>2</sub>O flux measurement support trailer.
 
 | | |
@@ -46,17 +46,17 @@ and communications network for up to several hours.
 The cable used does **not** match either vendor or manufacturer color
 conventions. Refer to this table exclusively for wiring the weather station:
 
-| Description    | Color  | M8 conn. pin | CR1000 |
-|----------------|--------|:------------:|:------:|
-| power input    | brown  | 2            | 12V    |
-| power ground   | green  | 8            | G      |
-| cable shield   | bare   | -            | G      |
-| SDI-12 data Tx | yellow | 7            | C7     |
-| SDI-12 data Rx | black  | 1            | C7     |
-| SDI-12 ground  | white  | 3            | G      |
-| heater (+)     | blue   | 4            | SW12V  |
-| heater (-)     | orange | 6            | G      |
-| *not used*     | red    | 5            | -      |
+| Description    | Color  | M8 conn. pin | CR1000 | Ext. power supply |
+|----------------|--------|:------------:|:------:|:-----------------:|
+| power input    | brown  | 2            | 12V    | - |
+| power ground   | green  | 8            | G      | - |
+| cable shield   | bare   | -            | G      | - |
+| SDI-12 data Tx | yellow | 7            | C7     | - |
+| SDI-12 data Rx | black  | 1            | C7     | - |
+| SDI-12 ground  | white  | 3            | G      | - |
+| heater (+)     | blue   | 4            | -      | 12V |
+| heater (-)     | orange | 6            | -      | G |
+| *not used*     | red    | 5            | -      | - |
 
 ### QUANTUM (PAR) sensor
 
